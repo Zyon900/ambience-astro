@@ -1,0 +1,145 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Sounds - Ambience">
+	<div class="space-y-8">
+		<div class="text-center">
+			<h1 class="text-4xl font-bold text-gray-100 mb-2">All Sounds</h1>
+			<p class="text-gray-400">Browse and add sounds to your mix</p>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sounds-grid">
+			<!-- Sounds will be rendered here -->
+		</div>
+	</div>
+</Layout>
+
+<script is:inline src="/audioManager.js"></script>
+<script is:inline>
+	const soundsData = {
+		sounds: [
+			{ id: 'rain', name: 'Rain', thumbnail: '/images/rain-thumb.jpg', file: '/sounds/rain.mp3' },
+			{
+				id: 'ocean',
+				name: 'Ocean Waves',
+				thumbnail: '/images/ocean-thumb.jpg',
+				file: '/sounds/ocean.mp3',
+			},
+			{ id: 'forest', name: 'Forest', thumbnail: '/images/forest-thumb.jpg', file: '/sounds/forest.mp3' },
+			{
+				id: 'fireplace',
+				name: 'Fireplace',
+				thumbnail: '/images/fireplace-thumb.jpg',
+				file: '/sounds/fireplace.mp3',
+			},
+			{ id: 'cafe', name: 'Cafe', thumbnail: '/images/cafe-thumb.jpg', file: '/sounds/cafe.mp3' },
+		],
+	};
+
+	const audioManager = new AudioManager();
+	const allSounds = soundsData.sounds;
+	const soundsGrid = document.getElementById('sounds-grid');
+
+	function isSoundActive(soundId) {
+		const activeSounds = audioManager.getActiveSounds();
+		return activeSounds.some((s) => s.id === soundId);
+	}
+
+	function renderSounds() {
+		soundsGrid.innerHTML = '';
+
+		allSounds.forEach((sound) => {
+			const isActive = isSoundActive(sound.id);
+			const soundCard = document.createElement('div');
+			soundCard.innerHTML = `
+				<div class="bg-gray-800 rounded-lg p-4 border ${
+					isActive ? 'border-accent' : 'border-gray-700'
+				} hover:border-accent transition-colors" data-sound-id="${sound.id}">
+					<div class="flex items-center gap-4">
+						<img src="${sound.thumbnail}" alt="${sound.name}" class="w-16 h-16 rounded object-cover flex-shrink-0" />
+						<div class="flex-1 min-w-0">
+							<h3 class="text-lg font-semibold text-gray-100 truncate">${sound.name}</h3>
+							${isActive ? '<p class="text-xs text-accent mt-1">✓ Added to mix</p>' : ''}
+							<div class="mt-2 space-y-2">
+								<div class="flex items-center gap-2">
+									<button type="button" class="sound-play-btn px-3 py-1 text-sm bg-accent hover:bg-accent-600 rounded transition-colors" data-sound-id="${sound.id}">
+										<span class="play-text">Play</span>
+									</button>
+									<label class="flex items-center gap-2 flex-1">
+										<span class="text-xs text-gray-400 w-12">Volume</span>
+										<input type="range" min="0" max="1" step="0.01" value="0.5" class="sound-volume-slider flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
+										<span class="sound-volume-value text-xs text-gray-400 w-12 text-right">50%</span>
+									</label>
+								</div>
+								<button type="button" class="sound-add-btn w-full px-3 py-2 text-sm bg-accent hover:bg-accent-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed" data-sound-id="${sound.id}" ${
+				isActive ? 'disabled' : ''
+			}>
+									${isActive ? 'Already Added' : 'Add to Mix'}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			soundsGrid.appendChild(soundCard);
+		});
+
+		// Attach event listeners
+		document.querySelectorAll('.sound-play-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				audioManager.toggleSound(soundId);
+				updatePlayButton(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
+			slider.addEventListener('input', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				const volume = parseFloat(e.target.value);
+				audioManager.setSoundVolume(soundId, volume);
+				updateVolumeDisplay(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-add-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				const sound = allSounds.find((s) => s.id === soundId);
+				if (sound) {
+					audioManager.addSound(sound);
+					renderSounds(); // Re-render to update UI
+				}
+			});
+		});
+	}
+
+	function updatePlayButton(soundId) {
+		const btn = document.querySelector(`.sound-play-btn[data-sound-id="${soundId}"]`);
+		if (btn) {
+			const playText = btn.querySelector('.play-text');
+			if (audioManager.isSoundPlaying(soundId)) {
+				playText.textContent = 'Pause';
+			} else {
+				playText.textContent = 'Play';
+			}
+		}
+	}
+
+	function updateVolumeDisplay(soundId) {
+		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
+		if (volumeValue) {
+			const volume = audioManager.getSoundVolume(soundId);
+			volumeValue.textContent = `${Math.round(volume * 100)}%`;
+		}
+	}
+
+	// Initialize
+	renderSounds();
+
+	// Cleanup on page unload
+	window.addEventListener('beforeunload', () => {
+		audioManager.cleanup();
+	});
+</script>

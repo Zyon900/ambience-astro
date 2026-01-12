@@ -1,11 +1,215 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Home - Ambience">
+	<div class="space-y-8">
+		<div class="text-center">
+			<h1 class="text-4xl font-bold text-gray-100 mb-2">Ambience</h1>
+			<p class="text-gray-400">Mix and play ambient sounds</p>
+		</div>
+
+		<div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+			<h2 class="text-2xl font-semibold text-gray-100 mb-4">Master Controls</h2>
+			<div class="space-y-4">
+				<div class="flex items-center gap-4">
+					<button
+						type="button"
+						id="master-play-btn"
+						class="px-6 py-3 bg-accent hover:bg-accent-600 rounded-lg font-semibold transition-colors"
+					>
+						Play All
+					</button>
+					<label class="flex items-center gap-4 flex-1">
+						<span class="text-gray-300 w-20">Master Volume</span>
+						<input
+							type="range"
+							min="0"
+							max="1"
+							step="0.01"
+							value="1"
+							id="master-volume-slider"
+							class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent"
+						/>
+						<span id="master-volume-value" class="text-gray-300 w-16 text-right">100%</span>
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div>
+			<h2 class="text-2xl font-semibold text-gray-100 mb-4">Active Sounds</h2>
+			<div id="active-sounds-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<!-- Active sounds will be rendered here -->
+			</div>
+			<div id="no-sounds-message" class="text-center py-12 text-gray-400 hidden">
+				<p class="text-lg">No sounds active</p>
+				<p class="text-sm mt-2">
+					Go to the <a href="/sounds" class="text-accent hover:underline">Sounds</a> page to add some!
+				</p>
+			</div>
+		</div>
+	</div>
 </Layout>
+
+<script is:inline src="/audioManager.js"></script>
+<script is:inline>
+	const soundsData = {
+		sounds: [
+			{ id: 'rain', name: 'Rain', thumbnail: '/images/rain-thumb.jpg', file: '/sounds/rain.mp3' },
+			{
+				id: 'ocean',
+				name: 'Ocean Waves',
+				thumbnail: '/images/ocean-thumb.jpg',
+				file: '/sounds/ocean.mp3',
+			},
+			{ id: 'forest', name: 'Forest', thumbnail: '/images/forest-thumb.jpg', file: '/sounds/forest.mp3' },
+			{
+				id: 'fireplace',
+				name: 'Fireplace',
+				thumbnail: '/images/fireplace-thumb.jpg',
+				file: '/sounds/fireplace.mp3',
+			},
+			{ id: 'cafe', name: 'Cafe', thumbnail: '/images/cafe-thumb.jpg', file: '/sounds/cafe.mp3' },
+		],
+	};
+
+	const audioManager = new AudioManager();
+	const allSounds = soundsData.sounds;
+
+	// Master controls
+	const masterPlayBtn = document.getElementById('master-play-btn');
+	const masterVolumeSlider = document.getElementById('master-volume-slider');
+	const masterVolumeValue = document.getElementById('master-volume-value');
+	const activeSoundsContainer = document.getElementById('active-sounds-container');
+	const noSoundsMessage = document.getElementById('no-sounds-message');
+
+	function updateMasterVolumeDisplay() {
+		const volume = audioManager.getMasterVolume();
+		masterVolumeValue.textContent = `${Math.round(volume * 100)}%`;
+	}
+
+	function updateMasterPlayButton() {
+		if (audioManager.isMasterPlaying()) {
+			masterPlayBtn.textContent = 'Pause All';
+		} else {
+			masterPlayBtn.textContent = 'Play All';
+		}
+	}
+
+	masterPlayBtn.addEventListener('click', () => {
+		audioManager.toggleMasterPlay();
+		updateMasterPlayButton();
+	});
+
+	masterVolumeSlider.addEventListener('input', (e) => {
+		const volume = parseFloat(e.target.value);
+		audioManager.setMasterVolume(volume);
+		updateMasterVolumeDisplay();
+	});
+
+	// Render active sounds
+	function renderActiveSounds() {
+		const activeSounds = audioManager.getActiveSounds();
+
+		if (activeSounds.length === 0) {
+			activeSoundsContainer.innerHTML = '';
+			noSoundsMessage.classList.remove('hidden');
+			return;
+		}
+
+		noSoundsMessage.classList.add('hidden');
+		activeSoundsContainer.innerHTML = '';
+
+		activeSounds.forEach((sound) => {
+			const soundCard = document.createElement('div');
+			soundCard.innerHTML = `
+				<div class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-accent transition-colors" data-sound-id="${sound.id}">
+					<div class="flex items-center gap-4">
+						<img src="${sound.thumbnail}" alt="${sound.name}" class="w-16 h-16 rounded object-cover flex-shrink-0" />
+						<div class="flex-1 min-w-0">
+							<h3 class="text-lg font-semibold text-gray-100 truncate">${sound.name}</h3>
+							<div class="mt-2 space-y-2">
+								<div class="flex items-center gap-2">
+									<button type="button" class="sound-mute-btn px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors" data-sound-id="${sound.id}">
+										<span class="mute-text">Mute</span>
+									</button>
+									<label class="flex items-center gap-2 flex-1">
+										<span class="text-xs text-gray-400 w-12">Volume</span>
+										<input type="range" min="0" max="1" step="0.01" value="${audioManager.getSoundVolume(sound.id)}" class="sound-volume-slider flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
+										<span class="sound-volume-value text-xs text-gray-400 w-12 text-right">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
+									</label>
+								</div>
+								<button type="button" class="sound-remove-btn w-full px-3 py-2 text-sm bg-red-600 hover:bg-red-700 rounded transition-colors" data-sound-id="${sound.id}">
+									Remove
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			activeSoundsContainer.appendChild(soundCard);
+		});
+
+		// Attach event listeners
+		document.querySelectorAll('.sound-mute-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				audioManager.toggleMute(soundId);
+				updateMuteButton(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
+			slider.addEventListener('input', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				const volume = parseFloat(e.target.value);
+				audioManager.setSoundVolume(soundId, volume);
+				updateVolumeDisplay(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-remove-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				audioManager.removeSound(soundId);
+				renderActiveSounds();
+				updateMasterPlayButton();
+			});
+		});
+	}
+
+	function updateMuteButton(soundId) {
+		const btn = document.querySelector(`.sound-mute-btn[data-sound-id="${soundId}"]`);
+		if (btn) {
+			const muteText = btn.querySelector('.mute-text');
+			if (audioManager.isMuted(soundId)) {
+				muteText.textContent = 'Unmute';
+				btn.classList.add('bg-red-600', 'hover:bg-red-700');
+				btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+			} else {
+				muteText.textContent = 'Mute';
+				btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+				btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+			}
+		}
+	}
+
+	function updateVolumeDisplay(soundId) {
+		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
+		if (volumeValue) {
+			const volume = audioManager.getSoundVolume(soundId);
+			volumeValue.textContent = `${Math.round(volume * 100)}%`;
+		}
+	}
+
+	// Initialize
+	updateMasterVolumeDisplay();
+	updateMasterPlayButton();
+	renderActiveSounds();
+
+	// Cleanup on page unload
+	window.addEventListener('beforeunload', () => {
+		audioManager.cleanup();
+	});
+</script>
