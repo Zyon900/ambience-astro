@@ -81,9 +81,7 @@ import Layout from '../layouts/Layout.astro';
 										<span class="sound-volume-value text-xs text-gray-400 w-10 sm:w-12 text-right flex-shrink-0" data-sound-id="${sound.id}">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
 									</label>
 								</div>
-								<button type="button" class="sound-add-btn w-full px-3 py-2 text-sm bg-accent hover:bg-accent-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed" data-sound-id="${sound.id}" ${
-				isActive ? 'disabled' : ''
-			}>
+								<button type="button" class="sound-add-btn w-full px-3 py-2 text-sm bg-accent hover:bg-accent-600 rounded transition-colors ${isActive ? 'opacity-50 cursor-not-allowed' : ''}" data-sound-id="${sound.id}">
 									${isActive ? 'Already Added' : 'Add to Mix'}
 								</button>
 							</div>
@@ -116,11 +114,21 @@ import Layout from '../layouts/Layout.astro';
 		document.querySelectorAll('.sound-add-btn').forEach((btn) => {
 			btn.addEventListener('click', (e) => {
 				const soundId = e.currentTarget.dataset.soundId;
-				const sound = allSounds.find((s) => s.id === soundId);
-				if (sound) {
-					audioManager.addSound(sound);
-					renderSounds(); // Re-render to update UI
+				const isActive = isSoundActive(soundId);
+				
+				if (isActive) {
+					// Remove sound from mix
+					audioManager.removeSound(soundId);
+				} else {
+					// Add sound to mix
+					const sound = allSounds.find((s) => s.id === soundId);
+					if (sound) {
+						audioManager.addSound(sound);
+					}
 				}
+				
+				// Update just this button and card border without re-rendering
+				updateSoundCardState(soundId);
 			});
 		});
 	}
@@ -163,6 +171,30 @@ import Layout from '../layouts/Layout.astro';
 				speakerIcon.classList.remove('hidden');
 				mutedIcon.classList.add('hidden');
 			}
+		}
+	}
+
+	function updateSoundCardState(soundId) {
+		const card = document.querySelector(`[data-sound-id="${soundId}"]`);
+		const btn = document.querySelector(`.sound-add-btn[data-sound-id="${soundId}"]`);
+		const isActive = isSoundActive(soundId);
+		
+		// Update card border
+		if (isActive) {
+			card?.classList.add('border-accent');
+			card?.classList.remove('border-gray-700');
+		} else {
+			card?.classList.remove('border-accent');
+			card?.classList.add('border-gray-700');
+		}
+		
+		// Update button state
+		if (isActive) {
+			btn.textContent = 'Already Added';
+			btn?.classList.add('opacity-50', 'cursor-not-allowed');
+		} else {
+			btn.textContent = 'Add to Mix';
+			btn?.classList.remove('opacity-50', 'cursor-not-allowed');
 		}
 	}
 
