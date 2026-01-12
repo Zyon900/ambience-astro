@@ -1,0 +1,44 @@
+{
+	"sounds": [
+		{
+			"id": "rain",
+			"name": "Rain",
+			"thumbnail": "/images/rain-thumb.jpg",
+			"file": "/sounds/rain.mp3",
+			"source": "https://example.com/rain",
+			"license": "CC BY 4.0"
+		},
+		{
+			"id": "ocean",
+			"name": "Ocean Waves",
+			"thumbnail": "/images/ocean-thumb.jpg",
+			"file": "/sounds/ocean.mp3",
+			"source": "https://example.com/ocean",
+			"license": "CC BY 4.0"
+		},
+		{
+			"id": "forest",
+			"name": "Forest",
+			"thumbnail": "/images/forest-thumb.jpg",
+			"file": "/sounds/forest.mp3",
+			"source": "https://example.com/forest",
+			"license": "CC BY 4.0"
+		},
+		{
+			"id": "fireplace",
+			"name": "Fireplace",
+			"thumbnail": "/images/fireplace-thumb.jpg",
+			"file": "/sounds/fireplace.mp3",
+			"source": "https://example.com/fireplace",
+			"license": "CC BY 4.0"
+		},
+		{
+			"id": "cafe",
+			"name": "Cafe",
+			"thumbnail": "/images/cafe-thumb.jpg",
+			"file": "/sounds/cafe.mp3",
+			"source": "https://example.com/cafe",
+			"license": "CC BY 4.0"
+		}
+	]
+}
