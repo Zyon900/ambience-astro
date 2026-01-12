@@ -20,9 +20,47 @@ const { title = 'Ambience' } = Astro.props;
 	</head>
 	<body class="bg-gray-900 text-gray-100 min-h-screen">
 		<Navigation />
-		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 			<slot />
 		</main>
 	</body>
 </html>
 
+<style>
+	/* Ensure range sliders are accessible and styled consistently */
+	input[type="range"] {
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
+	input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: #10b981;
+		cursor: pointer;
+		border: 2px solid #065f46;
+	}
+
+	input[type="range"]::-moz-range-thumb {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: #10b981;
+		cursor: pointer;
+		border: 2px solid #065f46;
+	}
+
+	/* Smooth scrolling */
+	html {
+		scroll-behavior: smooth;
+	}
+
+	/* Focus visible for better accessibility */
+	*:focus-visible {
+		outline: 2px solid #10b981;
+		outline-offset: 2px;
+	}
+</style>
