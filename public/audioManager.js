@@ -52,10 +52,16 @@ class AudioManager {
 
 		const audio = new Audio(sound.file);
 		audio.loop = true;
-		audio.volume = 0.5;
+		
+		// Use stored volume if available, otherwise default to 0.5
+		const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
+		audio.volume = storedVolume;
 		this.sounds.set(sound.id, audio);
-		this.soundVolumes.set(sound.id, 0.5);
+		this.soundVolumes.set(sound.id, storedVolume);
 		this.soundMuted.set(sound.id, false);
+		
+		// Update the audio volume after setting it
+		this.updateSoundVolume(sound.id);
 
 		const activeSounds = this.getActiveSounds();
 		if (!activeSounds.find((s) => s.id === sound.id)) {
