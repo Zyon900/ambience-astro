@@ -5,6 +5,7 @@ class AudioManager {
 		this.masterPlaying = false;
 		this.soundVolumes = new Map();
 		this.soundMuted = new Map();
+		this.loadSoundVolumes();
 		this.loadActiveSounds();
 	}
 
@@ -22,6 +23,26 @@ class AudioManager {
 
 	saveActiveSounds(sounds) {
 		localStorage.setItem('activeSounds', JSON.stringify(sounds));
+	}
+
+	getSoundVolumes() {
+		const stored = localStorage.getItem('soundVolumes');
+		return stored ? JSON.parse(stored) : {};
+	}
+
+	saveSoundVolumes() {
+		const volumes = {};
+		this.soundVolumes.forEach((volume, soundId) => {
+			volumes[soundId] = volume;
+		});
+		localStorage.setItem('soundVolumes', JSON.stringify(volumes));
+	}
+
+	loadSoundVolumes() {
+		const stored = this.getSoundVolumes();
+		Object.keys(stored).forEach((soundId) => {
+			this.soundVolumes.set(soundId, stored[soundId]);
+		});
 	}
 
 	addSound(sound) {
@@ -69,6 +90,7 @@ class AudioManager {
 	setSoundVolume(soundId, volume) {
 		const clampedVolume = Math.max(0, Math.min(1, volume));
 		this.soundVolumes.set(soundId, clampedVolume);
+		this.saveSoundVolumes();
 		this.updateSoundVolume(soundId);
 	}
 
