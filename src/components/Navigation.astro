@@ -1,0 +1,51 @@
+---
+const currentPath = Astro.url.pathname;
+
+function isActive(path: string): boolean {
+	return currentPath === path;
+}
+---
+
+<nav class="bg-gray-900 border-b border-gray-800">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex justify-between items-center h-16">
+			<div class="flex items-center">
+				<a href="/" class="text-xl font-bold text-accent hover:text-accent-400 transition-colors">
+					Ambience
+				</a>
+			</div>
+			<div class="flex space-x-2 sm:space-x-4">
+				<a
+					href="/"
+					class={`transition-colors px-2 sm:px-3 py-2 rounded-md text-sm font-medium ${
+						isActive('/')
+							? 'text-accent font-semibold'
+							: 'text-gray-300 hover:text-accent'
+					}`}
+				>
+					Home
+				</a>
+				<a
+					href="/sounds"
+					class={`transition-colors px-2 sm:px-3 py-2 rounded-md text-sm font-medium ${
+						isActive('/sounds')
+							? 'text-accent font-semibold'
+							: 'text-gray-300 hover:text-accent'
+					}`}
+				>
+					Sounds
+				</a>
+				<a
+					href="/about"
+					class={`transition-colors px-2 sm:px-3 py-2 rounded-md text-sm font-medium ${
+						isActive('/about')
+							? 'text-accent font-semibold'
+							: 'text-gray-300 hover:text-accent'
+					}`}
+				>
+					About
+				</a>
+			</div>
+		</div>
+	</div>
+</nav>

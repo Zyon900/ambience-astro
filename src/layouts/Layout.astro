@@ -1,3 +1,13 @@
+---
+import Navigation from '../components/Navigation.astro';
+
+interface Props {
+	title?: string;
+}
+
+const { title = 'Ambience' } = Astro.props;
+---
+
 <!doctype html>
 <html lang="en" class="dark">
 	<head>
@@ -5,10 +15,14 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<meta name="description" content="Ambience - Mix and play ambient sounds" />
+		<title>{title}</title>
 	</head>
-	<body class="bg-gray-900 text-white">
-		<slot />
+	<body class="bg-gray-900 text-gray-100 min-h-screen">
+		<Navigation />
+		<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<slot />
+		</main>
 	</body>
 </html>
 
