@@ -1,7 +1,7 @@
 class AudioManager {
 	constructor() {
 		this.sounds = new Map();
-		this.masterVolume = 1.0;
+		this.masterVolume = this.loadMasterVolume();
 		this.masterPlaying = false;
 		this.soundVolumes = new Map();
 		this.soundMuted = new Map();
@@ -86,7 +86,17 @@ class AudioManager {
 
 	setMasterVolume(volume) {
 		this.masterVolume = Math.max(0, Math.min(1, volume));
+		this.saveMasterVolume();
 		this.updateAllVolumes();
+	}
+
+	loadMasterVolume() {
+		const stored = localStorage.getItem('masterVolume');
+		return stored ? parseFloat(stored) : 1.0;
+	}
+
+	saveMasterVolume() {
+		localStorage.setItem('masterVolume', this.masterVolume.toString());
 	}
 
 	getMasterVolume() {
