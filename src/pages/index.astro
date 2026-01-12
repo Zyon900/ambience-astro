@@ -5,23 +5,23 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Home - Ambience">
 	<div class="space-y-8">
 		<div class="text-center">
-			<h1 class="text-4xl font-bold text-gray-100 mb-2">Ambience</h1>
-			<p class="text-gray-400">Mix and play ambient sounds</p>
+			<h1 class="text-3xl sm:text-4xl font-bold text-gray-100 mb-2">Ambience</h1>
+			<p class="text-gray-400 text-sm sm:text-base">Mix and play ambient sounds</p>
 		</div>
 
-		<div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-			<h2 class="text-2xl font-semibold text-gray-100 mb-4">Master Controls</h2>
+		<div class="bg-gray-800 rounded-lg p-4 sm:p-6 border border-gray-700">
+			<h2 class="text-xl sm:text-2xl font-semibold text-gray-100 mb-4">Master Controls</h2>
 			<div class="space-y-4">
-				<div class="flex items-center gap-4">
+				<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
 					<button
 						type="button"
 						id="master-play-btn"
-						class="px-6 py-3 bg-accent hover:bg-accent-600 rounded-lg font-semibold transition-colors"
+						class="px-6 py-3 bg-accent hover:bg-accent-600 active:bg-accent-700 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-gray-800"
 					>
 						Play All
 					</button>
-					<label class="flex items-center gap-4 flex-1">
-						<span class="text-gray-300 w-20">Master Volume</span>
+					<label class="flex items-center gap-2 sm:gap-4 flex-1">
+						<span class="text-gray-300 text-sm sm:text-base w-20 sm:w-24 flex-shrink-0">Master Volume</span>
 						<input
 							type="range"
 							min="0"
@@ -29,16 +29,16 @@ import Layout from '../layouts/Layout.astro';
 							step="0.01"
 							value="1"
 							id="master-volume-slider"
-							class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent"
+							class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-gray-800"
 						/>
-						<span id="master-volume-value" class="text-gray-300 w-16 text-right">100%</span>
+						<span id="master-volume-value" class="text-gray-300 text-sm sm:text-base w-12 sm:w-16 text-right flex-shrink-0">100%</span>
 					</label>
 				</div>
 			</div>
 		</div>
 
 		<div>
-			<h2 class="text-2xl font-semibold text-gray-100 mb-4">Active Sounds</h2>
+			<h2 class="text-xl sm:text-2xl font-semibold text-gray-100 mb-4">Active Sounds</h2>
 			<div id="active-sounds-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				<!-- Active sounds will be rendered here -->
 			</div>
@@ -131,13 +131,13 @@ import Layout from '../layouts/Layout.astro';
 							<h3 class="text-lg font-semibold text-gray-100 truncate">${sound.name}</h3>
 							<div class="mt-2 space-y-2">
 								<div class="flex items-center gap-2">
-									<button type="button" class="sound-mute-btn px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors" data-sound-id="${sound.id}">
+									<button type="button" class="sound-mute-btn px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors flex-shrink-0" data-sound-id="${sound.id}">
 										<span class="mute-text">Mute</span>
 									</button>
-									<label class="flex items-center gap-2 flex-1">
-										<span class="text-xs text-gray-400 w-12">Volume</span>
-										<input type="range" min="0" max="1" step="0.01" value="${audioManager.getSoundVolume(sound.id)}" class="sound-volume-slider flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
-										<span class="sound-volume-value text-xs text-gray-400 w-12 text-right">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
+									<label class="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+										<span class="text-xs text-gray-400 w-10 sm:w-12 flex-shrink-0">Volume</span>
+										<input type="range" min="0" max="1" step="0.01" value="${audioManager.getSoundVolume(sound.id)}" class="sound-volume-slider flex-1 min-w-0 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
+										<span class="sound-volume-value text-xs text-gray-400 w-10 sm:w-12 text-right flex-shrink-0">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
 									</label>
 								</div>
 								<button type="button" class="sound-remove-btn w-full px-3 py-2 text-sm bg-red-600 hover:bg-red-700 rounded transition-colors" data-sound-id="${sound.id}">
