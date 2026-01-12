@@ -35,7 +35,9 @@ const { sound, mode } = Astro.props;
 							<span class="mute-text">Mute</span>
 						</button>
 						<label class="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-							<span class="text-xs text-gray-400 w-10 sm:w-12 flex-shrink-0">Volume</span>
+							<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+							</svg>
 							<input
 								type="range"
 								min="0"
@@ -62,13 +64,20 @@ const { sound, mode } = Astro.props;
 					<div class="flex items-center gap-2">
 						<button
 							type="button"
-							class="sound-play-btn px-3 py-1 text-sm bg-accent hover:bg-accent-600 rounded transition-colors flex-shrink-0"
+							class="sound-play-btn p-2 bg-accent hover:bg-accent-600 rounded transition-colors flex-shrink-0 flex items-center justify-center"
 							data-sound-id={sound.id}
 						>
-							<span class="play-text">Play</span>
+							<svg class="play-icon w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M8 5v14l11-7z"/>
+							</svg>
+							<svg class="pause-icon w-4 h-4 text-white hidden" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+							</svg>
 						</button>
 						<label class="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-							<span class="text-xs text-gray-400 w-10 sm:w-12 flex-shrink-0">Volume</span>
+							<svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+							</svg>
 							<input
 								type="range"
 								min="0"
