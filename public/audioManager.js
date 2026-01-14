@@ -1,6 +1,7 @@
 class AudioManager {
 	constructor() {
 		this.sounds = new Map();
+		this.previewSounds = new Map(); // Temporary audio instances for preview
 		this.masterVolume = this.loadMasterVolume();
 		this.masterPlaying = false;
 		this.soundVolumes = new Map();
@@ -50,18 +51,48 @@ class AudioManager {
 			return;
 		}
 
-		const audio = new Audio(sound.file);
-		audio.loop = true;
-		
-		// Use stored volume if available, otherwise default to 0.5
-		const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
-		audio.volume = storedVolume;
-		this.sounds.set(sound.id, audio);
-		this.soundVolumes.set(sound.id, storedVolume);
-		this.soundMuted.set(sound.id, false);
-		
-		// Update the audio volume after setting it
-		this.updateSoundVolume(sound.id);
+		// Clean up preview audio if it exists
+		const previewAudio = this.previewSounds.get(sound.id);
+		if (previewAudio) {
+			const wasPlaying = !previewAudio.paused;
+			previewAudio.pause();
+			previewAudio.src = '';
+			this.previewSounds.delete(sound.id);
+			
+			// Create new audio for mix
+			const audio = new Audio(sound.file);
+			audio.loop = true;
+			
+			// Use stored volume if available, otherwise default to 0.5
+			const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
+			audio.volume = storedVolume;
+			this.sounds.set(sound.id, audio);
+			this.soundVolumes.set(sound.id, storedVolume);
+			this.soundMuted.set(sound.id, false);
+			
+			// Update the audio volume after setting it
+			this.updateSoundVolume(sound.id);
+			
+			// If preview was playing, start the mix audio
+			if (wasPlaying) {
+				audio.play().catch((error) => {
+					console.error('Error playing audio:', error);
+				});
+			}
+		} else {
+			const audio = new Audio(sound.file);
+			audio.loop = true;
+			
+			// Use stored volume if available, otherwise default to 0.5
+			const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
+			audio.volume = storedVolume;
+			this.sounds.set(sound.id, audio);
+			this.soundVolumes.set(sound.id, storedVolume);
+			this.soundMuted.set(sound.id, false);
+			
+			// Update the audio volume after setting it
+			this.updateSoundVolume(sound.id);
+		}
 
 		const activeSounds = this.getActiveSounds();
 		if (!activeSounds.find((s) => s.id === sound.id)) {
@@ -108,6 +139,12 @@ class AudioManager {
 		this.soundVolumes.set(soundId, clampedVolume);
 		this.saveSoundVolumes();
 		this.updateSoundVolume(soundId);
+		
+		// Also update preview volume if it exists
+		const previewAudio = this.previewSounds.get(soundId);
+		if (previewAudio) {
+			previewAudio.volume = clampedVolume * this.masterVolume;
+		}
 	}
 
 	getSoundVolume(soundId) {
@@ -141,6 +178,12 @@ class AudioManager {
 	updateAllVolumes() {
 		this.sounds.forEach((audio, soundId) => {
 			this.updateSoundVolume(soundId);
+		});
+		
+		// Also update preview volumes
+		this.previewSounds.forEach((audio, soundId) => {
+			const volume = this.soundVolumes.get(soundId) ?? 0.5;
+			audio.volume = volume * this.masterVolume;
 		});
 	}
 
@@ -194,10 +237,6 @@ class AudioManager {
 		}
 	}
 
-	isSoundPlaying(soundId) {
-		const audio = this.sounds.get(soundId);
-		return audio ? !audio.paused : false;
-	}
 
 	toggleSound(soundId) {
 		if (this.isSoundPlaying(soundId)) {
@@ -207,12 +246,76 @@ class AudioManager {
 		}
 	}
 
+	// Preview methods for sounds not in the mix
+	previewSound(soundId, file) {
+		// If sound is already in mix, use regular play
+		if (this.sounds.has(soundId)) {
+			this.playSound(soundId);
+			return;
+		}
+
+		// Create temporary preview audio
+		if (!this.previewSounds.has(soundId)) {
+			const audio = new Audio(file);
+			audio.loop = true;
+			const volume = this.getSoundVolume(soundId);
+			audio.volume = volume * this.masterVolume;
+			this.previewSounds.set(soundId, audio);
+		}
+
+		const audio = this.previewSounds.get(soundId);
+		audio.play().catch((error) => {
+			console.error('Error playing preview audio:', error);
+		});
+	}
+
+	pausePreview(soundId) {
+		const audio = this.previewSounds.get(soundId);
+		if (audio) {
+			audio.pause();
+		}
+	}
+
+	isPreviewPlaying(soundId) {
+		const audio = this.previewSounds.get(soundId);
+		return audio ? !audio.paused : false;
+	}
+
+	togglePreview(soundId, file) {
+		if (this.sounds.has(soundId)) {
+			// Sound is in mix, use regular toggle
+			this.toggleSound(soundId);
+		} else {
+			// Sound is not in mix, use preview
+			if (this.isPreviewPlaying(soundId)) {
+				this.pausePreview(soundId);
+			} else {
+				this.previewSound(soundId, file);
+			}
+		}
+	}
+
+	isSoundPlaying(soundId) {
+		// Check both mix sounds and preview sounds
+		const audio = this.sounds.get(soundId);
+		if (audio) {
+			return !audio.paused;
+		}
+		const previewAudio = this.previewSounds.get(soundId);
+		return previewAudio ? !previewAudio.paused : false;
+	}
+
 	cleanup() {
 		this.sounds.forEach((audio) => {
 			audio.pause();
 			audio.src = '';
 		});
+		this.previewSounds.forEach((audio) => {
+			audio.pause();
+			audio.src = '';
+		});
 		this.sounds.clear();
+		this.previewSounds.clear();
 		this.soundVolumes.clear();
 		this.soundMuted.clear();
 	}

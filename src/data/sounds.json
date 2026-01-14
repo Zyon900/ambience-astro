@@ -1,44 +1,76 @@
 {
 	"sounds": [
 		{
-			"id": "rain",
-			"name": "Rain",
-			"thumbnail": "/images/rain-thumb.jpg",
-			"file": "/sounds/rain.mp3",
-			"source": "https://example.com/rain",
-			"license": "CC BY 4.0"
+			"id": "european_forest",
+			"name": "European Forest",
+			"thumbnail": "/images/european_forest-thumb.jpg",
+			"file": "/sounds/european_forest.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
 		},
 		{
-			"id": "ocean",
-			"name": "Ocean Waves",
-			"thumbnail": "/images/ocean-thumb.jpg",
-			"file": "/sounds/ocean.mp3",
-			"source": "https://example.com/ocean",
-			"license": "CC BY 4.0"
+			"id": "farm_animals",
+			"name": "Farm Animals",
+			"thumbnail": "/images/farm_animals-thumb.jpg",
+			"file": "/sounds/farm_animals.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
 		},
 		{
-			"id": "forest",
-			"name": "Forest",
-			"thumbnail": "/images/forest-thumb.jpg",
-			"file": "/sounds/forest.mp3",
-			"source": "https://example.com/forest",
-			"license": "CC BY 4.0"
+			"id": "forest_birds",
+			"name": "Forest Birds",
+			"thumbnail": "/images/forest_birds-thumb.jpg",
+			"file": "/sounds/forest_birds.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
 		},
 		{
-			"id": "fireplace",
-			"name": "Fireplace",
-			"thumbnail": "/images/fireplace-thumb.jpg",
-			"file": "/sounds/fireplace.mp3",
-			"source": "https://example.com/fireplace",
-			"license": "CC BY 4.0"
+			"id": "heavy_rain",
+			"name": "Heavy Rain",
+			"thumbnail": "/images/heavy_rain-thumb.jpg",
+			"file": "/sounds/heavy_rain.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
 		},
 		{
-			"id": "cafe",
-			"name": "Cafe",
-			"thumbnail": "/images/cafe-thumb.jpg",
-			"file": "/sounds/cafe.mp3",
-			"source": "https://example.com/cafe",
-			"license": "CC BY 4.0"
+			"id": "light_rain",
+			"name": "Light Rain",
+			"thumbnail": "/images/light_rain-thumb.jpg",
+			"file": "/sounds/light_rain.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
+		},
+		{
+			"id": "night_crickets",
+			"name": "Night Crickets",
+			"thumbnail": "/images/night_crickets-thumb.jpg",
+			"file": "/sounds/night_crickets.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
+		},
+		{
+			"id": "office_ambience",
+			"name": "Office Ambience",
+			"thumbnail": "/images/office_ambience-thumb.jpg",
+			"file": "/sounds/office_ambience.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
+		},
+		{
+			"id": "summer_night_crickets",
+			"name": "Summer Night Crickets",
+			"thumbnail": "/images/summer_night_crickets-thumb.jpg",
+			"file": "/sounds/summer_night _crickets.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
+		},
+		{
+			"id": "windy_campfire",
+			"name": "Windy Campfire",
+			"thumbnail": "/images/windy_campfire-thumb.jpg",
+			"file": "/sounds/windy_campfire.mp3",
+			"source": "https://mixkit.co/free-sound-effects/ambience/",
+			"license": "Mixkit Sound Effects Free License"
 		}
 	]
 }
