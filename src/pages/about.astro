@@ -45,7 +45,7 @@ import soundsData from '../data/sounds.json';
 										rel="noopener noreferrer"
 										class="text-accent hover:underline"
 									>
-										{sound.source}
+										{sound.source === 'https://www.ffmpeg.org/' ? 'Generated with FFmpeg' : sound.source}
 									</a>
 								</p>
 							)}

@@ -71,6 +71,30 @@
 			"file": "/sounds/windy_campfire.mp3",
 			"source": "https://mixkit.co/free-sound-effects/ambience/",
 			"license": "Mixkit Sound Effects Free License"
+		},
+		{
+			"id": "white_noise",
+			"name": "White Noise",
+			"thumbnail": "/images/white_noise-thumb.jpg",
+			"file": "/sounds/white_noise.mp3",
+			"source": "https://www.ffmpeg.org/",
+			"license": "No License"
+		},
+		{
+			"id": "pink_noise",
+			"name": "Pink Noise",
+			"thumbnail": "/images/pink_noise-thumb.jpg",
+			"file": "/sounds/pink_noise.mp3",
+			"source": "https://www.ffmpeg.org/",
+			"license": "No License"
+		},
+		{
+			"id": "brown_noise",
+			"name": "Brown Noise",
+			"thumbnail": "/images/brown_noise-thumb.jpg",
+			"file": "/sounds/brown_noise.mp3",
+			"source": "https://www.ffmpeg.org/",
+			"license": "No License"
 		}
 	]
 }
