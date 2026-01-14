@@ -18,6 +18,7 @@ class AudioManager {
 	}
 
 	getActiveSounds() {
+		// Read from localStorage to get the source of truth
 		const stored = localStorage.getItem('activeSounds');
 		return stored ? JSON.parse(stored) : [];
 	}
@@ -209,11 +210,11 @@ class AudioManager {
 		this.masterPlaying = false;
 	}
 
-	toggleMasterPlay() {
+	async toggleMasterPlay() {
 		if (this.masterPlaying) {
 			this.pauseAll();
 		} else {
-			this.playAll();
+			await this.playAll();
 		}
 	}
 

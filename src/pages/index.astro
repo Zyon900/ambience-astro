@@ -125,8 +125,8 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
-	masterPlayBtn.addEventListener('click', () => {
-		audioManager.toggleMasterPlay();
+	masterPlayBtn.addEventListener('click', async () => {
+		await audioManager.toggleMasterPlay();
 		updateMasterPlayButton();
 	});
 
