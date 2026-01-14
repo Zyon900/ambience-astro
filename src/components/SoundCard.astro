@@ -45,7 +45,7 @@ const { sound, mode } = Astro.props;
 								class="sound-volume-slider flex-1 min-w-0 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent"
 								data-sound-id={sound.id}
 							/>
-							<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0">50%</span>
+							<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0" data-sound-id={sound.id}>50%</span>
 						</label>
 					</div>
 					<button
@@ -88,7 +88,7 @@ const { sound, mode } = Astro.props;
 								class="sound-volume-slider flex-1 min-w-0 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent"
 								data-sound-id={sound.id}
 							/>
-							<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0">50%</span>
+							<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0" data-sound-id={sound.id}>50%</span>
 						</label>
 					</div>
 					<button

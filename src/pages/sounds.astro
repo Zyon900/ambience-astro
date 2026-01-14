@@ -73,49 +73,47 @@ import soundsData from '../data/sounds.json';
 		});
 	}
 
-	// Attach event listeners to pre-rendered cards
-	document.querySelectorAll('.sound-play-btn').forEach((btn) => {
-		btn.addEventListener('click', (e) => {
-			const soundId = e.currentTarget.dataset.soundId;
-			const sound = allSounds.find((s) => s.id === soundId);
-			if (sound) {
-				audioManager.togglePreview(soundId, sound.file);
-				updatePlayButton(soundId);
-			}
-		});
-	});
-
-	document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
-		// Set initial value from stored volume
-		const soundId = slider.dataset.soundId;
-		slider.value = audioManager.getSoundVolume(soundId);
-		
-		slider.addEventListener('input', (e) => {
-			const soundId = e.currentTarget.dataset.soundId;
-			const volume = parseFloat(e.target.value);
-			audioManager.setSoundVolume(soundId, volume);
-			updateVolumeDisplay(soundId);
-			updateVolumeIcon(soundId);
-		});
-	});
-
-	document.querySelectorAll('.sound-add-btn').forEach((btn) => {
-		btn.addEventListener('click', (e) => {
-			const soundId = e.currentTarget.dataset.soundId;
-			const isActive = isSoundActive(soundId);
-			
-			if (isActive) {
-				audioManager.removeSound(soundId);
-			} else {
+	function attachEventListeners() {
+		// Attach event listeners to pre-rendered cards
+		document.querySelectorAll('.sound-play-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
 				const sound = allSounds.find((s) => s.id === soundId);
 				if (sound) {
-					audioManager.addSound(sound);
+					audioManager.togglePreview(soundId, sound.file);
+					updatePlayButton(soundId);
 				}
-			}
-			
-			updateSoundCardState(soundId);
+			});
 		});
-	});
+
+		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
+			slider.addEventListener('input', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				const volume = parseFloat(e.target.value);
+				audioManager.setSoundVolume(soundId, volume);
+				updateVolumeDisplay(soundId);
+				updateVolumeIcon(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-add-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const soundId = e.currentTarget.dataset.soundId;
+				const isActive = isSoundActive(soundId);
+				
+				if (isActive) {
+					audioManager.removeSound(soundId);
+				} else {
+					const sound = allSounds.find((s) => s.id === soundId);
+					if (sound) {
+						audioManager.addSound(sound);
+					}
+				}
+				
+				updateSoundCardState(soundId);
+			});
+		});
+	}
 
 	function updatePlayButton(soundId) {
 		const btn = document.querySelector(`.sound-play-btn[data-sound-id="${soundId}"]`);
@@ -182,14 +180,31 @@ import soundsData from '../data/sounds.json';
 		}
 	}
 
-	// Initialize
-	initializeCardStates();
-	
-	// Update volume displays and icons for all sounds
-	allSounds.forEach((sound) => {
-		updateVolumeDisplay(sound.id);
-		updateVolumeIcon(sound.id);
-	});
+	// Wait for DOM to be ready
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initialize);
+	} else {
+		initialize();
+	}
+
+	function initialize() {
+		// Attach event listeners first
+		attachEventListeners();
+		
+		// Initialize card states based on active sounds
+		initializeCardStates();
+		
+		// Set initial slider values and update displays for all sounds
+		allSounds.forEach((sound) => {
+			const slider = document.querySelector(`.sound-volume-slider[data-sound-id="${sound.id}"]`);
+			if (slider) {
+				const volume = audioManager.getSoundVolume(sound.id);
+				slider.value = volume;
+			}
+			updateVolumeDisplay(sound.id);
+			updateVolumeIcon(sound.id);
+		});
+	}
 
 	// Cleanup on page unload
 	window.addEventListener('beforeunload', () => {
