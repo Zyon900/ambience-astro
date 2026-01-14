@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import SoundCard from '../components/SoundCard.astro';
+import soundsData from '../data/sounds.json';
 ---
 
 <Layout title="Sounds - Ambience">
@@ -10,7 +12,9 @@ import Layout from '../layouts/Layout.astro';
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sounds-grid">
-			<!-- Sounds will be rendered here -->
+			{soundsData.sounds.map((sound) => (
+				<SoundCard sound={sound} mode="sounds" />
+			))}
 		</div>
 	</div>
 </Layout>
@@ -36,102 +40,82 @@ import Layout from '../layouts/Layout.astro';
 
 	const audioManager = new AudioManager();
 	const allSounds = soundsData.sounds;
-	const soundsGrid = document.getElementById('sounds-grid');
 
 	function isSoundActive(soundId) {
 		const activeSounds = audioManager.getActiveSounds();
 		return activeSounds.some((s) => s.id === soundId);
 	}
 
-	function renderSounds() {
-		soundsGrid.innerHTML = '';
-
+	// Initialize card states based on active sounds
+	function initializeCardStates() {
 		allSounds.forEach((sound) => {
 			const isActive = isSoundActive(sound.id);
-			const soundCard = document.createElement('div');
-			soundCard.innerHTML = `
-				<div class="bg-gray-800 rounded-lg p-4 border ${
-					isActive ? 'border-accent' : 'border-gray-700'
-				} hover:border-accent transition-colors" data-sound-id="${sound.id}">
-					<div class="flex items-center gap-4">
-						<img src="${sound.thumbnail}" alt="${sound.name}" class="w-16 h-16 rounded object-cover flex-shrink-0" />
-						<div class="flex-1 min-w-0">
-							<h3 class="text-lg font-semibold text-gray-100 truncate">${sound.name}</h3>
-							<div class="mt-2 space-y-2">
-								<div class="flex items-center gap-2">
-									<button type="button" class="sound-play-btn p-2 bg-accent hover:bg-accent-600 rounded transition-colors flex-shrink-0 flex items-center justify-center" data-sound-id="${sound.id}">
-										<svg class="play-icon w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-											<path d="M8 5v14l11-7z"/>
-										</svg>
-										<svg class="pause-icon w-4 h-4 text-white hidden" fill="currentColor" viewBox="0 0 24 24">
-											<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-										</svg>
-									</button>
-									<label class="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-										<svg class="volume-speaker-icon w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24" data-sound-id="${sound.id}">
-											<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-										</svg>
-										<svg class="volume-muted-icon w-4 h-4 text-gray-400 flex-shrink-0 hidden" fill="currentColor" viewBox="0 0 24 24" data-sound-id="${sound.id}">
-											<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-										</svg>
-										<input type="range" min="0" max="1" step="0.01" value="${audioManager.getSoundVolume(sound.id)}" class="sound-volume-slider flex-1 min-w-0 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
-										<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0" data-sound-id="${sound.id}">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
-									</label>
-								</div>
-								<button type="button" class="sound-add-btn w-full px-3 py-2 text-sm bg-accent hover:bg-accent-600 rounded transition-colors ${isActive ? 'opacity-50 cursor-not-allowed' : ''}" data-sound-id="${sound.id}">
-									${isActive ? 'Already Added' : 'Add to Mix'}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			`;
-			soundsGrid.appendChild(soundCard);
-		});
-
-		// Attach event listeners
-		document.querySelectorAll('.sound-play-btn').forEach((btn) => {
-			btn.addEventListener('click', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const sound = allSounds.find((s) => s.id === soundId);
-				if (sound) {
-					audioManager.togglePreview(soundId, sound.file);
-					updatePlayButton(soundId);
-				}
-			});
-		});
-
-		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
-			slider.addEventListener('input', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const volume = parseFloat(e.target.value);
-				audioManager.setSoundVolume(soundId, volume);
-				updateVolumeDisplay(soundId);
-				updateVolumeIcon(soundId);
-			});
-		});
-
-		document.querySelectorAll('.sound-add-btn').forEach((btn) => {
-			btn.addEventListener('click', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const isActive = isSoundActive(soundId);
-				
+			const card = document.querySelector(`[data-sound-id="${sound.id}"]`);
+			const btn = document.querySelector(`.sound-add-btn[data-sound-id="${sound.id}"]`);
+			
+			if (card && btn) {
 				if (isActive) {
-					// Remove sound from mix
-					audioManager.removeSound(soundId);
+					card.classList.add('border-accent');
+					card.classList.remove('border-gray-700');
+					btn.textContent = 'Already Added';
+					btn.classList.add('opacity-50', 'cursor-not-allowed');
+					btn.classList.remove('bg-accent', 'hover:bg-accent-600');
+					btn.classList.add('bg-gray-600', 'hover:bg-gray-500');
 				} else {
-					// Add sound to mix
-					const sound = allSounds.find((s) => s.id === soundId);
-					if (sound) {
-						audioManager.addSound(sound);
-					}
+					card.classList.remove('border-accent');
+					card.classList.add('border-gray-700');
+					btn.textContent = 'Add to Mix';
+					btn.classList.remove('opacity-50', 'cursor-not-allowed');
+					btn.classList.add('bg-accent', 'hover:bg-accent-600');
+					btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
 				}
-				
-				// Update just this button and card border without re-rendering
-				updateSoundCardState(soundId);
-			});
+			}
 		});
 	}
+
+	// Attach event listeners to pre-rendered cards
+	document.querySelectorAll('.sound-play-btn').forEach((btn) => {
+		btn.addEventListener('click', (e) => {
+			const soundId = e.currentTarget.dataset.soundId;
+			const sound = allSounds.find((s) => s.id === soundId);
+			if (sound) {
+				audioManager.togglePreview(soundId, sound.file);
+				updatePlayButton(soundId);
+			}
+		});
+	});
+
+	document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
+		// Set initial value from stored volume
+		const soundId = slider.dataset.soundId;
+		slider.value = audioManager.getSoundVolume(soundId);
+		
+		slider.addEventListener('input', (e) => {
+			const soundId = e.currentTarget.dataset.soundId;
+			const volume = parseFloat(e.target.value);
+			audioManager.setSoundVolume(soundId, volume);
+			updateVolumeDisplay(soundId);
+			updateVolumeIcon(soundId);
+		});
+	});
+
+	document.querySelectorAll('.sound-add-btn').forEach((btn) => {
+		btn.addEventListener('click', (e) => {
+			const soundId = e.currentTarget.dataset.soundId;
+			const isActive = isSoundActive(soundId);
+			
+			if (isActive) {
+				audioManager.removeSound(soundId);
+			} else {
+				const sound = allSounds.find((s) => s.id === soundId);
+				if (sound) {
+					audioManager.addSound(sound);
+				}
+			}
+			
+			updateSoundCardState(soundId);
+		});
+	});
 
 	function updatePlayButton(soundId) {
 		const btn = document.querySelector(`.sound-play-btn[data-sound-id="${soundId}"]`);
@@ -199,10 +183,11 @@ import Layout from '../layouts/Layout.astro';
 	}
 
 	// Initialize
-	renderSounds();
+	initializeCardStates();
 	
-	// Update volume icons for all sounds
+	// Update volume displays and icons for all sounds
 	allSounds.forEach((sound) => {
+		updateVolumeDisplay(sound.id);
 		updateVolumeIcon(sound.id);
 	});
 

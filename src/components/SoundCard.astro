@@ -17,11 +17,6 @@ const { sound, mode } = Astro.props;
 	data-sound-id={sound.id}
 >
 	<div class="flex items-center gap-4">
-		<img
-			src={sound.thumbnail}
-			alt={sound.name}
-			class="w-16 h-16 rounded object-cover flex-shrink-0"
-		/>
 		<div class="flex-1 min-w-0">
 			<h3 class="text-lg font-semibold text-gray-100 truncate">{sound.name}</h3>
 			{mode === 'home' && (
