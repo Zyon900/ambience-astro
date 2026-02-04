@@ -21,6 +21,7 @@ import soundsData from '../data/sounds.json';
 
 <script is:inline src="/audioManager.js"></script>
 <script is:inline>
+	// Static sound metadata (mirrors sounds.json) for client-side logic.
 	const soundsData = {
 		sounds: [
 			{ id: 'european_forest', name: 'European Forest', thumbnail: '/images/european_forest-thumb.jpg', file: '/sounds/european_forest.mp3' },
@@ -38,15 +39,17 @@ import soundsData from '../data/sounds.json';
 		],
 	};
 
+	// Audio controller for preview and mix management.
 	const audioManager = new AudioManager();
 	const allSounds = soundsData.sounds;
 
+	// Check if a sound is currently in the active mix.
 	function isSoundActive(soundId) {
 		const activeSounds = audioManager.getActiveSounds();
 		return activeSounds.some((s) => s.id === soundId);
 	}
 
-	// Initialize card states based on active sounds
+	// Initialize card states based on active sounds.
 	function initializeCardStates() {
 		allSounds.forEach((sound) => {
 			const isActive = isSoundActive(sound.id);
@@ -73,8 +76,9 @@ import soundsData from '../data/sounds.json';
 		});
 	}
 
+	// Attach UI event listeners for buttons and sliders.
 	function attachEventListeners() {
-		// Attach event listeners to pre-rendered cards
+		// Attach event listeners to pre-rendered cards.
 		document.querySelectorAll('.sound-play-btn').forEach((btn) => {
 			btn.addEventListener('click', (e) => {
 				const soundId = e.currentTarget.dataset.soundId;
@@ -115,6 +119,7 @@ import soundsData from '../data/sounds.json';
 		});
 	}
 
+	// Toggle play/pause icons for a sound card.
 	function updatePlayButton(soundId) {
 		const btn = document.querySelector(`.sound-play-btn[data-sound-id="${soundId}"]`);
 		if (btn) {
@@ -130,6 +135,7 @@ import soundsData from '../data/sounds.json';
 		}
 	}
 
+	// Update the numeric volume display for a sound card.
 	function updateVolumeDisplay(soundId) {
 		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
 		if (volumeValue) {
@@ -138,6 +144,7 @@ import soundsData from '../data/sounds.json';
 		}
 	}
 
+	// Toggle speaker/muted icon based on mute state or 0% volume.
 	function updateVolumeIcon(soundId) {
 		const speakerIcon = document.querySelector(`.volume-speaker-icon[data-sound-id="${soundId}"]`);
 		const mutedIcon = document.querySelector(`.volume-muted-icon[data-sound-id="${soundId}"]`);
@@ -156,12 +163,13 @@ import soundsData from '../data/sounds.json';
 		}
 	}
 
+	// Update a single card's UI when its active state changes.
 	function updateSoundCardState(soundId) {
 		const card = document.querySelector(`[data-sound-id="${soundId}"]`);
 		const btn = document.querySelector(`.sound-add-btn[data-sound-id="${soundId}"]`);
 		const isActive = isSoundActive(soundId);
 		
-		// Update card border
+		// Update card border.
 		if (isActive) {
 			card?.classList.add('border-accent');
 			card?.classList.remove('border-gray-700');
@@ -170,7 +178,7 @@ import soundsData from '../data/sounds.json';
 			card?.classList.add('border-gray-700');
 		}
 		
-		// Update button state
+		// Update button state.
 		if (isActive) {
 			btn.textContent = 'Already Added';
 			btn?.classList.add('opacity-50', 'cursor-not-allowed');
@@ -184,21 +192,22 @@ import soundsData from '../data/sounds.json';
 		}
 	}
 
-	// Wait for DOM to be ready
+	// Wait for DOM to be ready.
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', initialize);
 	} else {
 		initialize();
 	}
 
+	// Initialize UI state and slider values.
 	function initialize() {
-		// Attach event listeners first
+		// Attach event listeners first.
 		attachEventListeners();
 		
-		// Initialize card states based on active sounds
+		// Initialize card states based on active sounds.
 		initializeCardStates();
 		
-		// Set initial slider values and update displays for all sounds
+		// Set initial slider values and update displays for all sounds.
 		allSounds.forEach((sound) => {
 			const slider = document.querySelector(`.sound-volume-slider[data-sound-id="${sound.id}"]`);
 			if (slider) {
@@ -210,7 +219,7 @@ import soundsData from '../data/sounds.json';
 		});
 	}
 
-	// Cleanup on page unload
+	// Cleanup on page unload.
 	window.addEventListener('beforeunload', () => {
 		audioManager.cleanup();
 	});

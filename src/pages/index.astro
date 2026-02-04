@@ -64,6 +64,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script is:inline src="/audioManager.js"></script>
 <script is:inline>
+	// Static sound metadata (mirrors sounds.json) for client-side logic.
 	const soundsData = {
 		sounds: [
 			{ id: 'european_forest', name: 'European Forest', thumbnail: '/images/european_forest-thumb.jpg', file: '/sounds/european_forest.mp3' },
@@ -81,22 +82,25 @@ import Layout from '../layouts/Layout.astro';
 		],
 	};
 
+	// Audio controller for mix playback and persistence.
 	const audioManager = new AudioManager();
 	const allSounds = soundsData.sounds;
 
-	// Master controls
+	// Master controls elements.
 	const masterPlayBtn = document.getElementById('master-play-btn');
 	const masterVolumeSlider = document.getElementById('master-volume-slider');
 	const masterVolumeValue = document.getElementById('master-volume-value');
 	const activeSoundsContainer = document.getElementById('active-sounds-container');
 	const noSoundsMessage = document.getElementById('no-sounds-message');
 
+	// Render current master volume percentage and icon state.
 	function updateMasterVolumeDisplay() {
 		const volume = audioManager.getMasterVolume();
 		masterVolumeValue.textContent = `${Math.round(volume * 100)}%`;
 		updateMasterVolumeIcon();
 	}
 
+	// Toggle master volume icon based on muted state (0%).
 	function updateMasterVolumeIcon() {
 		const speakerIcon = document.getElementById('master-volume-speaker-icon');
 		const mutedIcon = document.getElementById('master-volume-muted-icon');
@@ -113,6 +117,7 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
+	// Update master play button icon based on playback state.
 	function updateMasterPlayButton() {
 		const playIcon = document.getElementById('master-play-icon');
 		const pauseIcon = document.getElementById('master-pause-icon');
@@ -125,18 +130,20 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
+	// Master play/pause toggle.
 	masterPlayBtn.addEventListener('click', async () => {
 		await audioManager.toggleMasterPlay();
 		updateMasterPlayButton();
 	});
 
+	// Master volume slider handling.
 	masterVolumeSlider.addEventListener('input', (e) => {
 		const volume = parseFloat(e.target.value);
 		audioManager.setMasterVolume(volume);
 		updateMasterVolumeDisplay();
 	});
 
-	// Render active sounds
+	// Render active sounds list from localStorage.
 	function renderActiveSounds() {
 		const activeSounds = audioManager.getActiveSounds();
 
@@ -183,7 +190,7 @@ import Layout from '../layouts/Layout.astro';
 			activeSoundsContainer.appendChild(soundCard);
 		});
 
-		// Attach event listeners
+		// Attach event listeners for controls inside active cards.
 		document.querySelectorAll('.sound-mute-btn').forEach((btn) => {
 			btn.addEventListener('click', (e) => {
 				const soundId = e.currentTarget.dataset.soundId;
@@ -212,6 +219,7 @@ import Layout from '../layouts/Layout.astro';
 		});
 	}
 
+	// Toggle mute button state and styles.
 	function updateMuteButton(soundId) {
 		const btn = document.querySelector(`.sound-mute-btn[data-sound-id="${soundId}"]`);
 		if (btn) {
@@ -229,6 +237,7 @@ import Layout from '../layouts/Layout.astro';
 		updateVolumeIcon(soundId);
 	}
 
+	// Toggle speaker/muted icon based on mute state or 0% volume.
 	function updateVolumeIcon(soundId) {
 		const speakerIcon = document.querySelector(`.volume-speaker-icon[data-sound-id="${soundId}"]`);
 		const mutedIcon = document.querySelector(`.volume-muted-icon[data-sound-id="${soundId}"]`);
@@ -247,6 +256,7 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
+	// Update the numeric volume display for a sound card.
 	function updateVolumeDisplay(soundId) {
 		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
 		if (volumeValue) {
@@ -255,19 +265,19 @@ import Layout from '../layouts/Layout.astro';
 		}
 	}
 
-	// Initialize - set slider to loaded volume
+	// Initialize - set slider to loaded volume.
 	masterVolumeSlider.value = audioManager.getMasterVolume();
 	
 	updateMasterVolumeDisplay();
 	updateMasterPlayButton();
 	renderActiveSounds();
 	
-	// Update volume icons for all active sounds
+	// Update volume icons for all active sounds.
 	audioManager.getActiveSounds().forEach((sound) => {
 		updateVolumeIcon(sound.id);
 	});
 
-	// Cleanup on page unload
+	// Cleanup on page unload.
 	window.addEventListener('beforeunload', () => {
 		audioManager.cleanup();
 	});

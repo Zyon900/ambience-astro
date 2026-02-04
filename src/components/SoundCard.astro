@@ -9,6 +9,7 @@ interface Props {
 	mode: 'home' | 'sounds';
 }
 
+// Props passed from page: sound metadata and display mode.
 const { sound, mode } = Astro.props;
 ---
 
@@ -20,6 +21,7 @@ const { sound, mode } = Astro.props;
 		<div class="flex-1 min-w-0">
 			<h3 class="text-lg font-semibold text-gray-100 truncate">{sound.name}</h3>
 			{mode === 'home' && (
+				// Home mode: controls for active sounds in the mix.
 				<div class="mt-2 space-y-2">
 					<div class="flex items-center gap-2">
 						<button
@@ -58,6 +60,7 @@ const { sound, mode } = Astro.props;
 				</div>
 			)}
 			{mode === 'sounds' && (
+				// Sounds mode: preview and add-to-mix controls.
 				<div class="mt-2 space-y-2">
 					<div class="flex items-center gap-2">
 						<button
