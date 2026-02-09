@@ -1,0 +1,214 @@
+// Client-side logic for the home (mix) page.
+import soundsData from '../data/sounds.json';
+import { AudioManager } from './audioManager';
+
+const audioManager = new AudioManager();
+const allSounds = soundsData.sounds;
+
+const masterPlayBtn = document.getElementById('master-play-btn') as HTMLButtonElement | null;
+const masterVolumeSlider = document.getElementById('master-volume-slider') as HTMLInputElement | null;
+const masterVolumeValue = document.getElementById('master-volume-value') as HTMLSpanElement | null;
+const activeSoundsContainer = document.getElementById('active-sounds-container') as HTMLDivElement | null;
+const noSoundsMessage = document.getElementById('no-sounds-message') as HTMLDivElement | null;
+
+if (
+	!masterPlayBtn ||
+	!masterVolumeSlider ||
+	!masterVolumeValue ||
+	!activeSoundsContainer ||
+	!noSoundsMessage
+) {
+	// DOM not ready or markup mismatch.
+} else {
+	const masterVolumeSliderEl = masterVolumeSlider;
+	const masterVolumeValueEl = masterVolumeValue;
+	const activeSoundsContainerEl = activeSoundsContainer;
+	const noSoundsMessageEl = noSoundsMessage;
+
+	function updateMasterVolumeDisplay() {
+		const volume = audioManager.getMasterVolume();
+		masterVolumeValueEl.textContent = `${Math.round(volume * 100)}%`;
+		updateMasterVolumeIcon();
+	}
+
+	function updateMasterVolumeIcon() {
+		const speakerIcon = document.getElementById('master-volume-speaker-icon');
+		const mutedIcon = document.getElementById('master-volume-muted-icon');
+		const volume = audioManager.getMasterVolume();
+
+		if (speakerIcon && mutedIcon) {
+			if (volume === 0) {
+				speakerIcon.classList.add('hidden');
+				mutedIcon.classList.remove('hidden');
+			} else {
+				speakerIcon.classList.remove('hidden');
+				mutedIcon.classList.add('hidden');
+			}
+		}
+	}
+
+	function updateMasterPlayButton() {
+		const playIcon = document.getElementById('master-play-icon');
+		const pauseIcon = document.getElementById('master-pause-icon');
+		if (playIcon && pauseIcon) {
+			if (audioManager.isMasterPlaying()) {
+				playIcon.classList.add('hidden');
+				pauseIcon.classList.remove('hidden');
+			} else {
+				playIcon.classList.remove('hidden');
+				pauseIcon.classList.add('hidden');
+			}
+		}
+	}
+
+	masterPlayBtn.addEventListener('click', async () => {
+		await audioManager.toggleMasterPlay();
+		updateMasterPlayButton();
+	});
+
+	masterVolumeSliderEl.addEventListener('input', (e) => {
+		const target = e.target as HTMLInputElement;
+		const volume = parseFloat(target.value);
+		audioManager.setMasterVolume(volume);
+		updateMasterVolumeDisplay();
+	});
+
+	function renderActiveSounds() {
+		const activeSounds = audioManager.getActiveSounds();
+
+		if (activeSounds.length === 0) {
+			activeSoundsContainerEl.innerHTML = '';
+			noSoundsMessageEl.classList.remove('hidden');
+			return;
+		}
+
+		noSoundsMessageEl.classList.add('hidden');
+		activeSoundsContainerEl.innerHTML = '';
+
+		activeSounds.forEach((sound) => {
+			const soundCard = document.createElement('div');
+			soundCard.innerHTML = `
+				<div class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-accent transition-colors" data-sound-id="${sound.id}">
+					<div class="flex items-center gap-4">
+						<div class="flex-1 min-w-0">
+							<h3 class="text-lg font-semibold text-gray-100 truncate">${sound.name}</h3>
+							<div class="mt-2 space-y-2">
+								<div class="flex items-center gap-2">
+									<button type="button" class="sound-mute-btn px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 rounded transition-colors flex-shrink-0" data-sound-id="${sound.id}">
+										<span class="mute-text">Mute</span>
+									</button>
+									<label class="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
+										<svg class="volume-speaker-icon w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24" data-sound-id="${sound.id}">
+											<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+										</svg>
+										<svg class="volume-muted-icon w-4 h-4 text-gray-400 flex-shrink-0 hidden" fill="currentColor" viewBox="0 0 24 24" data-sound-id="${sound.id}">
+											<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+										</svg>
+										<input type="range" min="0" max="1" step="0.01" value="${audioManager.getSoundVolume(sound.id)}" class="sound-volume-slider flex-1 min-w-0 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent" data-sound-id="${sound.id}" />
+										<span class="sound-volume-value text-xs text-gray-400 w-8 text-right flex-shrink-0" data-sound-id="${sound.id}">${Math.round(audioManager.getSoundVolume(sound.id) * 100)}%</span>
+									</label>
+								</div>
+								<button type="button" class="sound-remove-btn w-full px-3 py-2 text-sm bg-red-600 hover:bg-red-700 rounded transition-colors" data-sound-id="${sound.id}">
+									Remove
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			activeSoundsContainerEl.appendChild(soundCard);
+		});
+
+		document.querySelectorAll('.sound-mute-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const target = e.currentTarget as HTMLElement;
+				const soundId = target.dataset.soundId;
+				if (!soundId) return;
+				audioManager.toggleMute(soundId);
+				updateMuteButton(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
+			slider.addEventListener('input', (e) => {
+				const target = e.target as HTMLInputElement;
+				const soundId = target.dataset.soundId;
+				if (!soundId) return;
+				const volume = parseFloat(target.value);
+				audioManager.setSoundVolume(soundId, volume);
+				updateVolumeDisplay(soundId);
+				updateVolumeIcon(soundId);
+			});
+		});
+
+		document.querySelectorAll('.sound-remove-btn').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const target = e.currentTarget as HTMLElement;
+				const soundId = target.dataset.soundId;
+				if (!soundId) return;
+				audioManager.removeSound(soundId);
+				renderActiveSounds();
+				updateMasterPlayButton();
+			});
+		});
+	}
+
+	function updateMuteButton(soundId: string) {
+		const btn = document.querySelector(`.sound-mute-btn[data-sound-id="${soundId}"]`);
+		if (btn) {
+			const muteText = btn.querySelector('.mute-text');
+			if (muteText) {
+				if (audioManager.isMuted(soundId)) {
+					muteText.textContent = 'Unmute';
+					btn.classList.add('bg-red-600', 'hover:bg-red-700');
+					btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+				} else {
+					muteText.textContent = 'Mute';
+					btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+					btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+				}
+			}
+		}
+		updateVolumeIcon(soundId);
+	}
+
+	function updateVolumeIcon(soundId: string) {
+		const speakerIcon = document.querySelector(`.volume-speaker-icon[data-sound-id="${soundId}"]`);
+		const mutedIcon = document.querySelector(`.volume-muted-icon[data-sound-id="${soundId}"]`);
+		if (speakerIcon && mutedIcon) {
+			const isMuted = audioManager.isMuted(soundId);
+			const volume = audioManager.getSoundVolume(soundId);
+			const shouldShowMuted = isMuted || volume === 0;
+
+			if (shouldShowMuted) {
+				speakerIcon.classList.add('hidden');
+				mutedIcon.classList.remove('hidden');
+			} else {
+				speakerIcon.classList.remove('hidden');
+				mutedIcon.classList.add('hidden');
+			}
+		}
+	}
+
+	function updateVolumeDisplay(soundId: string) {
+		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
+		if (volumeValue) {
+			const volume = audioManager.getSoundVolume(soundId);
+			volumeValue.textContent = `${Math.round(volume * 100)}%`;
+		}
+	}
+
+	masterVolumeSliderEl.value = String(audioManager.getMasterVolume());
+
+	updateMasterVolumeDisplay();
+	updateMasterPlayButton();
+	renderActiveSounds();
+
+	audioManager.getActiveSounds().forEach((sound) => {
+		updateVolumeIcon(sound.id);
+	});
+
+	window.addEventListener('beforeunload', () => {
+		audioManager.cleanup();
+	});
+}
