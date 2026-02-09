@@ -1,5 +1,7 @@
 ---
+// Base layout wrapper for all pages.
 import Navigation from '../components/Navigation.astro';
+import '../styles/global.css';
 
 interface Props {
 	title?: string;
@@ -14,7 +16,6 @@ const { title = 'Ambience' } = Astro.props;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content="Ambience - Mix and play ambient sounds" />
 		<title>{title}</title>
 	</head>
@@ -25,40 +26,3 @@ const { title = 'Ambience' } = Astro.props;
 		</main>
 	</body>
 </html>
-
-<style>
-	/* Ensure range sliders are accessible and styled consistently */
-	input[type="range"] {
-		-webkit-appearance: none;
-		appearance: none;
-	}	input[type="range"]::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 16px;
-		height: 16px;
-		border-radius: 50%;
-		background: #10b981;
-		cursor: pointer;
-		border: 2px solid #065f46;
-	}
-
-	input[type="range"]::-moz-range-thumb {
-		width: 16px;
-		height: 16px;
-		border-radius: 50%;
-		background: #10b981;
-		cursor: pointer;
-		border: 2px solid #065f46;
-	}
-
-	/* Smooth scrolling */
-	html {
-		scroll-behavior: smooth;
-	}
-
-	/* Focus visible for better accessibility */
-	*:focus-visible {
-		outline: 2px solid #10b981;
-		outline-offset: 2px;
-	}
-</style>

@@ -1,7 +1,17 @@
 ---
+// Sounds catalog page (browse and add to mix).
 import Layout from '../layouts/Layout.astro';
 import SoundCard from '../components/SoundCard.astro';
 import soundsData from '../data/sounds.json';
+
+const sounds = soundsData.sounds as Array<{
+	id: string;
+	name: string;
+	thumbnail: string;
+	file: string;
+	source?: string;
+	license?: string;
+}>;
 ---
 
 <Layout title="Sounds - Ambience">
@@ -12,215 +22,11 @@ import soundsData from '../data/sounds.json';
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sounds-grid">
-			{soundsData.sounds.map((sound) => (
+			{sounds.map((sound) => (
 				<SoundCard sound={sound} mode="sounds" />
 			))}
 		</div>
 	</div>
 </Layout>
 
-<script is:inline src="/audioManager.js"></script>
-<script is:inline>
-	// Static sound metadata (mirrors sounds.json) for client-side logic.
-	const soundsData = {
-		sounds: [
-			{ id: 'european_forest', name: 'European Forest', thumbnail: '/images/european_forest-thumb.jpg', file: '/sounds/european_forest.mp3' },
-			{ id: 'farm_animals', name: 'Farm Animals', thumbnail: '/images/farm_animals-thumb.jpg', file: '/sounds/farm_animals.mp3' },
-			{ id: 'forest_birds', name: 'Forest Birds', thumbnail: '/images/forest_birds-thumb.jpg', file: '/sounds/forest_birds.mp3' },
-			{ id: 'heavy_rain', name: 'Heavy Rain', thumbnail: '/images/heavy_rain-thumb.jpg', file: '/sounds/heavy_rain.mp3' },
-			{ id: 'light_rain', name: 'Light Rain', thumbnail: '/images/light_rain-thumb.jpg', file: '/sounds/light_rain.mp3' },
-			{ id: 'night_crickets', name: 'Night Crickets', thumbnail: '/images/night_crickets-thumb.jpg', file: '/sounds/night_crickets.mp3' },
-			{ id: 'office_ambience', name: 'Office Ambience', thumbnail: '/images/office_ambience-thumb.jpg', file: '/sounds/office_ambience.mp3' },
-			{ id: 'summer_night_crickets', name: 'Summer Night Crickets', thumbnail: '/images/summer_night_crickets-thumb.jpg', file: '/sounds/summer_night_crickets.mp3' },
-			{ id: 'windy_campfire', name: 'Windy Campfire', thumbnail: '/images/windy_campfire-thumb.jpg', file: '/sounds/windy_campfire.mp3' },
-			{ id: 'white_noise', name: 'White Noise', thumbnail: '/images/white_noise-thumb.jpg', file: '/sounds/white_noise.mp3' },
-			{ id: 'pink_noise', name: 'Pink Noise', thumbnail: '/images/pink_noise-thumb.jpg', file: '/sounds/pink_noise.mp3' },
-			{ id: 'brown_noise', name: 'Brown Noise', thumbnail: '/images/brown_noise-thumb.jpg', file: '/sounds/brown_noise.mp3' },
-		],
-	};
-
-	// Audio controller for preview and mix management.
-	const audioManager = new AudioManager();
-	const allSounds = soundsData.sounds;
-
-	// Check if a sound is currently in the active mix.
-	function isSoundActive(soundId) {
-		const activeSounds = audioManager.getActiveSounds();
-		return activeSounds.some((s) => s.id === soundId);
-	}
-
-	// Initialize card states based on active sounds.
-	function initializeCardStates() {
-		allSounds.forEach((sound) => {
-			const isActive = isSoundActive(sound.id);
-			const card = document.querySelector(`[data-sound-id="${sound.id}"]`);
-			const btn = document.querySelector(`.sound-add-btn[data-sound-id="${sound.id}"]`);
-			
-			if (card && btn) {
-				if (isActive) {
-					card.classList.add('border-accent');
-					card.classList.remove('border-gray-700');
-					btn.textContent = 'Already Added';
-					btn.classList.add('opacity-50', 'cursor-not-allowed');
-					btn.classList.add('bg-accent', 'hover:bg-accent-600');
-					btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-				} else {
-					card.classList.remove('border-accent');
-					card.classList.add('border-gray-700');
-					btn.textContent = 'Add to Mix';
-					btn.classList.remove('opacity-50', 'cursor-not-allowed');
-					btn.classList.add('bg-accent', 'hover:bg-accent-600');
-					btn.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-				}
-			}
-		});
-	}
-
-	// Attach UI event listeners for buttons and sliders.
-	function attachEventListeners() {
-		// Attach event listeners to pre-rendered cards.
-		document.querySelectorAll('.sound-play-btn').forEach((btn) => {
-			btn.addEventListener('click', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const sound = allSounds.find((s) => s.id === soundId);
-				if (sound) {
-					audioManager.togglePreview(soundId, sound.file);
-					updatePlayButton(soundId);
-				}
-			});
-		});
-
-		document.querySelectorAll('.sound-volume-slider').forEach((slider) => {
-			slider.addEventListener('input', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const volume = parseFloat(e.target.value);
-				audioManager.setSoundVolume(soundId, volume);
-				updateVolumeDisplay(soundId);
-				updateVolumeIcon(soundId);
-			});
-		});
-
-		document.querySelectorAll('.sound-add-btn').forEach((btn) => {
-			btn.addEventListener('click', (e) => {
-				const soundId = e.currentTarget.dataset.soundId;
-				const isActive = isSoundActive(soundId);
-				
-				if (isActive) {
-					audioManager.removeSound(soundId);
-				} else {
-					const sound = allSounds.find((s) => s.id === soundId);
-					if (sound) {
-						audioManager.addSound(sound);
-					}
-				}
-				
-				updateSoundCardState(soundId);
-			});
-		});
-	}
-
-	// Toggle play/pause icons for a sound card.
-	function updatePlayButton(soundId) {
-		const btn = document.querySelector(`.sound-play-btn[data-sound-id="${soundId}"]`);
-		if (btn) {
-			const playIcon = btn.querySelector('.play-icon');
-			const pauseIcon = btn.querySelector('.pause-icon');
-			if (audioManager.isSoundPlaying(soundId)) {
-				playIcon.classList.add('hidden');
-				pauseIcon.classList.remove('hidden');
-			} else {
-				playIcon.classList.remove('hidden');
-				pauseIcon.classList.add('hidden');
-			}
-		}
-	}
-
-	// Update the numeric volume display for a sound card.
-	function updateVolumeDisplay(soundId) {
-		const volumeValue = document.querySelector(`.sound-volume-value[data-sound-id="${soundId}"]`);
-		if (volumeValue) {
-			const volume = audioManager.getSoundVolume(soundId);
-			volumeValue.textContent = `${Math.round(volume * 100)}%`;
-		}
-	}
-
-	// Toggle speaker/muted icon based on mute state or 0% volume.
-	function updateVolumeIcon(soundId) {
-		const speakerIcon = document.querySelector(`.volume-speaker-icon[data-sound-id="${soundId}"]`);
-		const mutedIcon = document.querySelector(`.volume-muted-icon[data-sound-id="${soundId}"]`);
-		if (speakerIcon && mutedIcon) {
-			const isMuted = audioManager.isMuted(soundId);
-			const volume = audioManager.getSoundVolume(soundId);
-			const shouldShowMuted = isMuted || volume === 0;
-			
-			if (shouldShowMuted) {
-				speakerIcon.classList.add('hidden');
-				mutedIcon.classList.remove('hidden');
-			} else {
-				speakerIcon.classList.remove('hidden');
-				mutedIcon.classList.add('hidden');
-			}
-		}
-	}
-
-	// Update a single card's UI when its active state changes.
-	function updateSoundCardState(soundId) {
-		const card = document.querySelector(`[data-sound-id="${soundId}"]`);
-		const btn = document.querySelector(`.sound-add-btn[data-sound-id="${soundId}"]`);
-		const isActive = isSoundActive(soundId);
-		
-		// Update card border.
-		if (isActive) {
-			card?.classList.add('border-accent');
-			card?.classList.remove('border-gray-700');
-		} else {
-			card?.classList.remove('border-accent');
-			card?.classList.add('border-gray-700');
-		}
-		
-		// Update button state.
-		if (isActive) {
-			btn.textContent = 'Already Added';
-			btn?.classList.add('opacity-50', 'cursor-not-allowed');
-			btn?.classList.add('bg-accent', 'hover:bg-accent-600');
-			btn?.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-		} else {
-			btn.textContent = 'Add to Mix';
-			btn?.classList.remove('opacity-50', 'cursor-not-allowed');
-			btn?.classList.add('bg-accent', 'hover:bg-accent-600');
-			btn?.classList.remove('bg-gray-600', 'hover:bg-gray-500');
-		}
-	}
-
-	// Wait for DOM to be ready.
-	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', initialize);
-	} else {
-		initialize();
-	}
-
-	// Initialize UI state and slider values.
-	function initialize() {
-		// Attach event listeners first.
-		attachEventListeners();
-		
-		// Initialize card states based on active sounds.
-		initializeCardStates();
-		
-		// Set initial slider values and update displays for all sounds.
-		allSounds.forEach((sound) => {
-			const slider = document.querySelector(`.sound-volume-slider[data-sound-id="${sound.id}"]`);
-			if (slider) {
-				const volume = audioManager.getSoundVolume(sound.id);
-				slider.value = volume;
-			}
-			updateVolumeDisplay(sound.id);
-			updateVolumeIcon(sound.id);
-		});
-	}
-
-	// Cleanup on page unload.
-	window.addEventListener('beforeunload', () => {
-		audioManager.cleanup();
-	});
-</script>
+<script type="module" src="/src/scripts/sounds.ts"></script>
