@@ -3,6 +3,7 @@
 import Layout from '../layouts/Layout.astro';
 import SoundCard from '../components/SoundCard.astro';
 import soundsData from '../data/sounds.json';
+import soundsScriptUrl from '../scripts/sounds.ts?url';
 
 const sounds = soundsData.sounds as Array<{
 	id: string;
@@ -29,4 +30,4 @@ const sounds = soundsData.sounds as Array<{
 	</div>
 </Layout>
 
-<script type="module" src="/src/scripts/sounds.ts"></script>
+<script type="module" src={soundsScriptUrl}></script>

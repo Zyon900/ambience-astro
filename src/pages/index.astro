@@ -1,6 +1,7 @@
 ---
 // Home page with master controls and active sounds list.
 import Layout from '../layouts/Layout.astro';
+import indexScriptUrl from '../scripts/index.ts?url';
 ---
 
 <Layout title="Home - Ambience">
@@ -63,4 +64,4 @@ import Layout from '../layouts/Layout.astro';
 	</div>
 </Layout>
 
-<script type="module" src="/src/scripts/index.ts"></script>
+<script type="module" src={indexScriptUrl}></script>
