@@ -3,8 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "concurrently \"bun run dev:scripts\" \"astro dev\"",
+    "build": "bun run build:scripts && astro build",
+    "build:scripts": "bun build src/scripts/index.ts src/scripts/sounds.ts --outdir public/scripts --target=browser",
+    "dev:scripts": "bun build src/scripts/index.ts src/scripts/sounds.ts --outdir public/scripts --target=browser --watch",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -15,6 +17,7 @@
   "devDependencies": {
     "@types/bun": "^1.3.8",
     "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
     "tailwindcss": "^3"
   }
 }
