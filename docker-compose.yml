@@ -1,0 +1,16 @@
+services:
+  web:
+    image: ghcr.io/zyon900/ambience-astro:latest
+    build: .
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - DIST_DIR=/dist
+    ports:
+      - "127.0.0.1:3000:3000"
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on:
+      - web
