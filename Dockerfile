@@ -13,10 +13,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV DIST_DIR=/dist
 
 COPY --from=build /app/dist /dist
-COPY server.ts /app/server.ts
 
 EXPOSE 3000
-CMD ["bun", "run", "/app/server.ts"]
+CMD ["bunx", "serve", "/dist", "-p", "3000"]
