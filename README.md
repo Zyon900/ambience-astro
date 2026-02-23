@@ -2,15 +2,9 @@
 
 Ambience is a static website that lets you create an ambient sound mix. It was built as a university project at the Karlsruhe Institute of Technology (KIT). It uses HTML5 features like the Local Storage API, the Audio API, and range inputs to keep a consistent, dynamic experience across page routes.
 
-Online Preview:
-```
-https://ambience.zykes.dev/
-```
+[Online Preview](https://ambience.zykes.dev/)
 
-KIT website:
-```
-https://www.kit.edu/english/
-```
+[KIT website](https://www.kit.edu/english/)
 
 ## Tech
 
