@@ -32,14 +32,3 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/zyon900/ambience-astro:latest
-
-      - name: Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /opt/ambience-astro
-            docker compose pull
-            docker compose up -d --remove-orphans
