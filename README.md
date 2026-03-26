@@ -36,6 +36,7 @@ http://localhost:3000
 1. Create a `.env` file next to `docker-compose.yml`:
 ```
 TUNNEL_TOKEN=your-cloudflare-token
+IMAGE_TAG=latest
 ```
 
 2. Start:

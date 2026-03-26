@@ -1,7 +1,7 @@
 services:
   web:
-    image: ghcr.io/zyon900/ambience-astro:latest
-    build: .
+    image: ghcr.io/zyon900/ambience-astro:${IMAGE_TAG:-latest}
+    pull_policy: always
     restart: unless-stopped
     environment:
       - PORT=3000
