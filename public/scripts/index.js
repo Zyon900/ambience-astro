@@ -108,6 +108,9 @@ class AudioManager {
   masterPlaying = false;
   soundVolumes = new Map;
   soundMuted = new Map;
+  loopMonitorId = null;
+  loopBackOffsetSeconds = 0.08;
+  loopMonitorIntervalMs = 20;
   constructor() {
     this.loadSoundVolumes();
     this.loadActiveSounds();
@@ -142,6 +145,42 @@ class AudioManager {
       this.soundVolumes.set(soundId, stored[soundId]);
     });
   }
+  createAudio(file) {
+    const audio = new Audio(file);
+    audio.loop = false;
+    audio.preload = "auto";
+    return audio;
+  }
+  getAllAudioElements() {
+    return [...this.sounds.values(), ...this.previewSounds.values()];
+  }
+  monitorSeamlessLoops() {
+    this.getAllAudioElements().forEach((audio) => {
+      if (audio.paused)
+        return;
+      if (!Number.isFinite(audio.duration) || audio.duration <= this.loopBackOffsetSeconds)
+        return;
+      if (audio.currentTime >= audio.duration - this.loopBackOffsetSeconds) {
+        audio.currentTime = 0;
+      }
+    });
+  }
+  startLoopMonitor() {
+    if (this.loopMonitorId !== null)
+      return;
+    this.loopMonitorId = window.setInterval(() => {
+      this.monitorSeamlessLoops();
+    }, this.loopMonitorIntervalMs);
+  }
+  stopLoopMonitorIfIdle() {
+    if (this.loopMonitorId === null)
+      return;
+    const hasPlayingAudio = this.getAllAudioElements().some((audio) => !audio.paused);
+    if (!hasPlayingAudio) {
+      window.clearInterval(this.loopMonitorId);
+      this.loopMonitorId = null;
+    }
+  }
   addSound(sound) {
     if (this.sounds.has(sound.id)) {
       return;
@@ -152,8 +191,7 @@ class AudioManager {
       previewAudio.pause();
       previewAudio.src = "";
       this.previewSounds.delete(sound.id);
-      const audio = new Audio(sound.file);
-      audio.loop = true;
+      const audio = this.createAudio(sound.file);
       const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
       audio.volume = storedVolume;
       this.sounds.set(sound.id, audio);
@@ -164,10 +202,10 @@ class AudioManager {
         audio.play().catch((error) => {
           console.error("Error playing audio:", error);
         });
+        this.startLoopMonitor();
       }
     } else {
-      const audio = new Audio(sound.file);
-      audio.loop = true;
+      const audio = this.createAudio(sound.file);
       const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
       audio.volume = storedVolume;
       this.sounds.set(sound.id, audio);
@@ -189,6 +227,7 @@ class AudioManager {
       this.sounds.delete(soundId);
       this.soundVolumes.delete(soundId);
       this.soundMuted.delete(soundId);
+      this.stopLoopMonitorIfIdle();
       const activeSounds = this.getActiveSounds().filter((s) => s.id !== soundId);
       this.saveActiveSounds(activeSounds);
     }
@@ -262,12 +301,14 @@ class AudioManager {
     });
     await Promise.all(playPromises);
     this.masterPlaying = true;
+    this.startLoopMonitor();
   }
   pauseAll() {
     this.sounds.forEach((audio) => {
       audio.pause();
     });
     this.masterPlaying = false;
+    this.stopLoopMonitorIfIdle();
   }
   async toggleMasterPlay() {
     if (this.masterPlaying) {
@@ -285,12 +326,14 @@ class AudioManager {
       audio.play().catch((error) => {
         console.error("Error playing audio:", error);
       });
+      this.startLoopMonitor();
     }
   }
   pauseSound(soundId) {
     const audio = this.sounds.get(soundId);
     if (audio) {
       audio.pause();
+      this.stopLoopMonitorIfIdle();
     }
   }
   previewSound(soundId, file) {
@@ -299,8 +342,7 @@ class AudioManager {
       return;
     }
     if (!this.previewSounds.has(soundId)) {
-      const audio2 = new Audio(file);
-      audio2.loop = true;
+      const audio2 = this.createAudio(file);
       const volume = this.getSoundVolume(soundId);
       audio2.volume = volume * this.masterVolume;
       this.previewSounds.set(soundId, audio2);
@@ -310,12 +352,14 @@ class AudioManager {
       audio.play().catch((error) => {
         console.error("Error playing preview audio:", error);
       });
+      this.startLoopMonitor();
     }
   }
   pausePreview(soundId) {
     const audio = this.previewSounds.get(soundId);
     if (audio) {
       audio.pause();
+      this.stopLoopMonitorIfIdle();
     }
   }
   isPreviewPlaying(soundId) {
@@ -349,6 +393,10 @@ class AudioManager {
     }
   }
   cleanup() {
+    if (this.loopMonitorId !== null) {
+      window.clearInterval(this.loopMonitorId);
+      this.loopMonitorId = null;
+    }
     this.sounds.forEach((audio) => {
       audio.pause();
       audio.src = "";

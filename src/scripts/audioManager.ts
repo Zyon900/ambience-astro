@@ -15,6 +15,9 @@ export class AudioManager {
 	private masterPlaying: boolean = false;
 	private soundVolumes: Map<string, number> = new Map();
 	private soundMuted: Map<string, boolean> = new Map();
+	private loopMonitorId: number | null = null;
+	private readonly loopBackOffsetSeconds = 0.08;
+	private readonly loopMonitorIntervalMs = 20;
 
 	constructor() {
 		this.loadSoundVolumes();
@@ -57,6 +60,46 @@ export class AudioManager {
 		});
 	}
 
+	private createAudio(file: string): HTMLAudioElement {
+		const audio = new Audio(file);
+		audio.loop = false;
+		audio.preload = 'auto';
+		return audio;
+	}
+
+	private getAllAudioElements(): HTMLAudioElement[] {
+		return [...this.sounds.values(), ...this.previewSounds.values()];
+	}
+
+	private monitorSeamlessLoops(): void {
+		this.getAllAudioElements().forEach((audio) => {
+			if (audio.paused) return;
+			if (!Number.isFinite(audio.duration) || audio.duration <= this.loopBackOffsetSeconds) return;
+
+			if (audio.currentTime >= audio.duration - this.loopBackOffsetSeconds) {
+				audio.currentTime = 0;
+			}
+		});
+	}
+
+	private startLoopMonitor(): void {
+		if (this.loopMonitorId !== null) return;
+
+		this.loopMonitorId = window.setInterval(() => {
+			this.monitorSeamlessLoops();
+		}, this.loopMonitorIntervalMs);
+	}
+
+	private stopLoopMonitorIfIdle(): void {
+		if (this.loopMonitorId === null) return;
+
+		const hasPlayingAudio = this.getAllAudioElements().some((audio) => !audio.paused);
+		if (!hasPlayingAudio) {
+			window.clearInterval(this.loopMonitorId);
+			this.loopMonitorId = null;
+		}
+	}
+
 	addSound(sound: Sound): void {
 		if (this.sounds.has(sound.id)) {
 			return; // Sound already added
@@ -69,8 +112,7 @@ export class AudioManager {
 			previewAudio.src = '';
 			this.previewSounds.delete(sound.id);
 
-			const audio = new Audio(sound.file);
-			audio.loop = true;
+			const audio = this.createAudio(sound.file);
 			const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
 			audio.volume = storedVolume;
 			this.sounds.set(sound.id, audio);
@@ -82,10 +124,10 @@ export class AudioManager {
 				audio.play().catch((error) => {
 					console.error('Error playing audio:', error);
 				});
+				this.startLoopMonitor();
 			}
 		} else {
-			const audio = new Audio(sound.file);
-			audio.loop = true;
+			const audio = this.createAudio(sound.file);
 			const storedVolume = this.soundVolumes.get(sound.id) ?? 0.5;
 			audio.volume = storedVolume;
 			this.sounds.set(sound.id, audio);
@@ -110,6 +152,7 @@ export class AudioManager {
 			this.sounds.delete(soundId);
 			this.soundVolumes.delete(soundId);
 			this.soundMuted.delete(soundId);
+			this.stopLoopMonitorIfIdle();
 
 			// Remove from active sounds in localStorage
 			const activeSounds = this.getActiveSounds().filter((s) => s.id !== soundId);
@@ -200,6 +243,7 @@ export class AudioManager {
 
 		await Promise.all(playPromises);
 		this.masterPlaying = true;
+		this.startLoopMonitor();
 	}
 
 	pauseAll(): void {
@@ -207,6 +251,7 @@ export class AudioManager {
 			audio.pause();
 		});
 		this.masterPlaying = false;
+		this.stopLoopMonitorIfIdle();
 	}
 
 	async toggleMasterPlay(): Promise<void> {
@@ -227,6 +272,7 @@ export class AudioManager {
 			audio.play().catch((error) => {
 				console.error('Error playing audio:', error);
 			});
+			this.startLoopMonitor();
 		}
 	}
 
@@ -234,6 +280,7 @@ export class AudioManager {
 		const audio = this.sounds.get(soundId);
 		if (audio) {
 			audio.pause();
+			this.stopLoopMonitorIfIdle();
 		}
 	}
 
@@ -244,8 +291,7 @@ export class AudioManager {
 		}
 
 		if (!this.previewSounds.has(soundId)) {
-			const audio = new Audio(file);
-			audio.loop = true;
+			const audio = this.createAudio(file);
 			const volume = this.getSoundVolume(soundId);
 			audio.volume = volume * this.masterVolume;
 			this.previewSounds.set(soundId, audio);
@@ -256,6 +302,7 @@ export class AudioManager {
 			audio.play().catch((error) => {
 				console.error('Error playing preview audio:', error);
 			});
+			this.startLoopMonitor();
 		}
 	}
 
@@ -263,6 +310,7 @@ export class AudioManager {
 		const audio = this.previewSounds.get(soundId);
 		if (audio) {
 			audio.pause();
+			this.stopLoopMonitorIfIdle();
 		}
 	}
 
@@ -301,6 +349,11 @@ export class AudioManager {
 	}
 
 	cleanup(): void {
+		if (this.loopMonitorId !== null) {
+			window.clearInterval(this.loopMonitorId);
+			this.loopMonitorId = null;
+		}
+
 		this.sounds.forEach((audio) => {
 			audio.pause();
 			audio.src = '';
